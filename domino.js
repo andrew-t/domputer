@@ -36,20 +36,42 @@ class Domino {
 				const p2 = p.changeOfBasis(
 					targetU, targetV,
 					target.location);
-				if (Math.abs(p2.x) > hw ||
-					Math.abs(p2.y) > ht)
-					continue;
-				// The dominoes do collide, but which way
-				// should we fall? For now, only fall
-				// directly forward or backward. It's easier
-				// and might be fine?
-				return (this.location.changeOfBasis(
-					targetU, targetV,
-					target.location) > 0)
-						? this.direction
-						: this.direction.opposite();
+				if (Math.abs(p2.x) < hw &&
+					Math.abs(p2.y) < ht)
+					// The dominoes do collide, but which way
+					// should we fall? For now, only fall
+					// directly forward or backward. It's easier
+					// and might be fine?
+					return (this.location.changeOfBasis(
+						targetU, targetV,
+						target.location) > 0)
+							? this.direction
+							: this.direction.opposite();
 			}
 		return null;
+	}
+
+	wouldObstruct(target) {
+		// As above, but simpler.
+		const hw = Domino.width / 2,
+			ht = Domino.thickness / 2;
+		const v = this.direction.asVector(),
+			u = v.perpendicular();
+		for (let x = -hw; x <= hw; ++x)
+			for (let y = -ht; y <= ht; ++y) {
+				const p = this.location
+						.plus(u.times(x))
+						.plus(v.times(y)),
+					targetV = target.direction.asVector(),
+					targetU = targetV.perpendicular();
+				const p2 = p.changeOfBasis(
+					targetU, targetV,
+					target.location);
+				if (Math.abs(p2.x) <= hw &&
+					Math.abs(p2.y) <= ht)
+					return true;
+			}
+		return false;
 	}
 
 	toString() {

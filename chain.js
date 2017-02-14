@@ -24,7 +24,7 @@ class Chain {
 		this.dominoes.splice(x.indexOf(domino), 1);
 	}
 
-	_markDirty() {
+	markDirty() {
 		this.fallSequence = null;
 	}
 

@@ -8,6 +8,9 @@ class Panel {
 		console.log(this.ctx);
 
 		this.currentDragDomino = null;
+		this.dragStart = null;
+		this.dragging = false;
+		this.playing = false;
 
 		canvas.addEventListener('mousedown',
 			e => this.startDrag(e));
@@ -17,51 +20,90 @@ class Panel {
 			e => this.endDrag(e));
 		canvas.addEventListener('mouseup',
 			e => this.endDrag(e));
+		setInterval(() => this.frameAdvance(),
+			1000 / Panel.framerate);
 	}
 
 	createDragDomino(location, direction) {
-		this.currentDragDomino = new Domino(
-			location, direction);
-		this.addDomino(this.currentDragDomino);
+		const domino = new Domino(location, direction);
+		if (!this.wouldObstructAny(domino)) {
+			this.currentDragDomino = domino;
+			this.addDomino(domino);
+			this.fallSequence = null;
+			this.chain = null;
+			return domino;
+		}
+		else return null;
+	}
+
+	wouldObstructAny(domino) {
+		let result = false;
+		this.dominoes.forEach(candidate => {
+			if (domino != candidate &&
+				candidate.wouldObstruct(domino))
+					result = true;
+		});
+		return result;
 	}
 
 	startDrag(e) {
-		const mouse = this._mouseVector(e);
+		const wasPlaying = this.playing,
+			mouse = this._mouseVector(e);
+		this.stop();
 		let clicked = null;
 		this.dominoes.forEach(domino => {
 			if (domino.location.minus(mouse).length <
 					Panel.clickRadius)
 				clicked = domino;
 		});
-		if (!clicked)
+		if (!clicked) {
+			this.dragging = true;
+			this.dragStart = mouse;
 			this.createDragDomino(mouse, Direction.zero);
-		else if (clicked == this.trigger)
-			this.play();
-		else
+		} else if (clicked == this.trigger) {
+			if (!wasPlaying)
+				this.play();
+		} else
 			this.removeDomino(clicked);
 		e.preventDefault();
-		this.drawFrame(0);
+		if (!this.playing)
+			this.drawFrame(0);
 	}
 
 	continueDrag(e) {
-		if (!this.currentDragDomino)
+		if (!this.dragging)
 			return;
 		const mouse = this._mouseVector(e),
-			motion = this.currentDragDomino
-				.location.minus(mouse),
+			motion = (this.currentDragDomino
+				? this.currentDragDomino.location
+				: this.dragStart).minus(mouse),
 			direction = motion.direction.opposite();
-		this.currentDragDomino.direction = direction;
-		if (motion.length >= Panel.clickRadius)
-			this.createDragDomino(mouse, direction);
+		if (this.currentDragDomino != null ||
+			this.createDragDomino(mouse, motion)) {
+			// Rotate the current domino if it won't hit anything:
+			const oldCurrentDragDirection =
+					this.currentDragDomino.direction;
+			this.currentDragDomino.direction = direction;
+			if (this.wouldObstructAny(this.currentDragDomino))
+				this.currentDragDomino.direction =
+					oldCurrentDragDirection;
+			// Try to add a new domino if we've moved far enough.
+			if (motion.length >= Panel.dominoSpacing)
+				this.createDragDomino(mouse, direction);
+		}
 		e.preventDefault();
 		this.drawFrame(0);
-		console.log(this.currentDragDomino.toString())
+		this.chain.markDirty();
 	}
 
 	endDrag(e) {
-		this.currentDragDomino = null;
-		e.preventDefault();
-		this.drawFrame(0);
+		if (this.dragging) {
+			this.currentDragDomino = null;
+			this.dragging = false;
+			this.drawFrame(0);
+		}
+		if (e)
+			e.preventDefault();
 	}
 
 	_mouseVector(e) {
@@ -80,6 +122,7 @@ class Panel {
 	}
 
 	drawFrame(n) {
+		console.log('drawing frame ' + n)
 		this.blank();
 		if (!this.fallSequence)
 			this.rebuildChain();
@@ -131,9 +174,9 @@ class Panel {
 		this.ctx.rotate(direction.theta);
 		this.ctx.strokeStyle = '1px solid black';
 		this.ctx.strokeRect(
-			Domino.thickness / 2,
+			-Domino.thickness / 2,
 			-Domino.width / 2,
-			Domino.height,
+			-Domino.height,
 			Domino.width);
 		this.ctx.restore();
 	}
@@ -142,7 +185,35 @@ class Panel {
 		this.ctx.fillStyle = '#fc8';
 		this.ctx.fillRect(-10, -10, this.canvas.width + 10, this.canvas.height + 10);
 	}
+
+	play() {
+		this.endDrag();
+		this.playing = true;
+		this.paused = false;
+		this.frame = 0;
+	}
+
+	pause() {
+		this.paused = true;
+	}
+
+	stop() {
+		this.playing = false;
+		this.paused = false;
+		this.frame = 0;
+	}
+
+	frameAdvance() {
+		if (this.playing && !this.paused) {
+			if (!this.fallSequence)
+				this.rebuildChain();
+			this.drawFrame(this.frame++);
+			if (this.frame > this.fallSequence.length)
+				this.pause();
+		}
+	}
 }
 
 Panel.clickRadius = 10;
 Panel.dominoSpacing = Domino.height / 2;
+Panel.framerate = 1;
