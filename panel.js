@@ -47,27 +47,28 @@ class Panel {
 	}
 
 	startDrag(e) {
-		const wasPlaying = this.playing,
-			mouse = this._mouseVector(e);
-		this.stop();
-		let clicked = null;
-		this.dominoes.forEach(domino => {
-			if (domino.location.minus(mouse).length <
-					Panel.clickRadius)
-				clicked = domino;
-		});
-		if (!clicked) {
-			this.dragging = true;
-			this.dragStart = mouse;
-			this.createDragDomino(mouse, Direction.zero);
-		} else if (clicked == this.trigger) {
-			if (!wasPlaying)
+		if (this.playing)
+			this.stop();
+		else {
+			const mouse = this._mouseVector(e);
+			let clicked = null;
+			this.dominoes.forEach(domino => {
+				if (domino.location.minus(mouse).length <
+						Panel.clickRadius)
+					clicked = domino;
+			});
+			if (!clicked) {
+				this.dragging = true;
+				this.dragStart = mouse;
+				this.createDragDomino(mouse, Direction.zero);
+			} else if (clicked == this.trigger)
 				this.play();
-		} else
-			this.removeDomino(clicked);
+			else
+				this.removeDomino(clicked);
+			if (!this.playing)
+				this.drawFrame(0);
+		}
 		e.preventDefault();
-		if (!this.playing)
-			this.drawFrame(0);
 	}
 
 	continueDrag(e) {
@@ -201,6 +202,7 @@ class Panel {
 		this.playing = false;
 		this.paused = false;
 		this.frame = 0;
+		this.drawFrame(0);
 	}
 
 	frameAdvance() {
