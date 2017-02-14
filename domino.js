@@ -17,12 +17,12 @@ class Domino {
 	wouldHit(target, direction) {
 		const hw = Domino.width / 2,
 			ht = Domino.thickness / 2;
-		// Loop over every (integer) point in
+		// Loop over a net of points in
 		// the fallen domino's footprint:
-		const v = this.direction.asVector(),
+		const v = direction.asVector(),
 			u = v.perpendicular();
-		for (let x = -hw; x <= hw; ++x)
-			for (let y = 1; y <= 1 + Domino.height; ++y) {
+		for (let x = -hw; x <= hw; x += Domino.collisionResolution)
+			for (let y = ht; y <= ht + Domino.height; y += Domino.collisionResolution) {
 				const p = this.location
 						.plus(u.times(x))
 						.plus(v.times(y)),
@@ -44,9 +44,9 @@ class Domino {
 					// and might be fine?
 					return (this.location.changeOfBasis(
 						targetU, targetV,
-						target.location) > 0)
-							? this.direction
-							: this.direction.opposite();
+						target.location).y < 0)
+							? target.direction
+							: target.direction.opposite();
 			}
 		return null;
 	}
@@ -57,8 +57,8 @@ class Domino {
 			ht = Domino.thickness / 2;
 		const v = this.direction.asVector(),
 			u = v.perpendicular();
-		for (let x = -hw; x <= hw; ++x)
-			for (let y = -ht; y <= ht; ++y) {
+		for (let x = -hw; x <= hw; x += Domino.collisionResolution)
+			for (let y = -ht; y <= ht; y += Domino.collisionResolution) {
 				const p = this.location
 						.plus(u.times(x))
 						.plus(v.times(y)),
@@ -86,6 +86,8 @@ class Domino {
 Domino.width = 20;
 Domino.thickness = 4;
 Domino.height = 2 * Domino.width;
+
+Domino.collisionResolution = 0.2;
 
 Domino._nextId = 1;
 

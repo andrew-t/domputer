@@ -175,9 +175,9 @@ class Panel {
 		this.ctx.rotate(direction.theta);
 		this.ctx.strokeStyle = '1px solid black';
 		this.ctx.strokeRect(
-			-Domino.thickness / 2,
+			Domino.thickness / 2,
 			-Domino.width / 2,
-			-Domino.height,
+			Domino.height,
 			Domino.width);
 		this.ctx.restore();
 	}
