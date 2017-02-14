@@ -2,7 +2,12 @@ const TAU = Math.PI * 2;
 
 class Direction {
 	constructor(theta) {
-		this.theta = theta % TAU;
+		if (theta instanceof Direction)
+			this.theta = theta.theta;
+		else if (isNaN(theta))
+			throw new Error('Invalid theta');
+		else
+			this.theta = theta % TAU;
 	}
 
 	asVector() {
@@ -11,7 +16,7 @@ class Direction {
 
 	perpendicular() {
 		// TODO - test that this rotates the same way as Vector#perpendicular()
-		return new Direction(this.theta + Math.PI / 2);
+		return new Direction(this.theta - Math.PI / 2);
 	}
 
 	opposite() {
@@ -35,4 +40,4 @@ class Direction {
 
 Direction.zero = new Direction(0);
 
-if (module) module.exports = Direction;
+if (typeof module !== 'undefined') module.exports = Direction;

@@ -75,4 +75,4 @@ class Vector {
 
 Vector.zero = new Vector(0, 0);
 
-if (module) module.exports = Vector;
+if (typeof module !== 'undefined') module.exports = Vector;

@@ -1,4 +1,4 @@
-if (require) {
+if (typeof require !== 'undefined') {
 	Vector = require('./vector');
 	Direction = require('./direction');
 	Domino = require('./domino');
@@ -56,4 +56,4 @@ class Chain {
 	}
 }
 
-if (module) module.exports = Chain;
+if (typeof module !== 'undefined') module.exports = Chain;

@@ -1,4 +1,4 @@
-if (require) {
+if (typeof require !== 'undefined') {
 	Vector = require('./vector');
 	Direction = require('./direction');
 }
@@ -61,10 +61,10 @@ class Domino {
 }
 
 // Dimensions the same for all dominoes:
-Domino.width = 10;
-Domino.thickness = 2;
+Domino.width = 20;
+Domino.thickness = 4;
 Domino.height = 2 * Domino.width;
 
 Domino._nextId = 1;
 
-if (module) module.exports = Domino;
+if (typeof module !== 'undefined') module.exports = Domino;

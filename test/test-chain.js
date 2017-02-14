@@ -27,7 +27,7 @@ describe('chain', () => {
 			.to.be.equal(chain.dominoes.length);
 	});
 
-	it('should not topple a that are too spaced out', () => {
+	it('should not topple a row that is too spaced out', () => {
 		for (let n = 1; n < 10; ++n)
 			chain.add(new Domino(
 				trigger.location
