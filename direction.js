@@ -1,0 +1,38 @@
+const TAU = Math.PI * 2;
+
+class Direction {
+	constructor(theta) {
+		this.theta = theta % TAU;
+	}
+
+	asVector() {
+		return Vector.fromAngle(this.theta);
+	}
+
+	perpendicular() {
+		// TODO - test that this rotates the same way as Vector#perpendicular()
+		return new Direction(this.theta + Math.PI / 2);
+	}
+
+	opposite() {
+		return new Direction(this.theta + Math.PI);
+	}
+
+	get degrees() {
+		return this.theta * 180 / Math.PI;
+	}
+
+	toString() {
+		const v = this.asVector();
+		return t(this.degrees) +
+			'º (' + t(v.x) + ', ' + t(v.y) + ')';
+
+		function t(n) {
+			return n.toString().substr(0, 5);
+		}
+	}
+}
+
+Direction.zero = new Direction(0);
+
+if (module) module.exports = Direction;

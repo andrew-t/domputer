@@ -1,0 +1,16 @@
+{
+  "name": "domputer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "chia": "0.0.1",
+    "mocha": "^3.2.0"
+  }
+}
