@@ -12,16 +12,19 @@ class Panel {
 		this.dragging = false;
 		this.playing = false;
 
-		canvas.addEventListener('mousedown',
-			e => this.startDrag(e));
-		canvas.addEventListener('mousemove',
-			e => this.continueDrag(e));
-		canvas.addEventListener('mouseout',
-			e => this.endDrag(e));
-		canvas.addEventListener('mouseup',
-			e => this.endDrag(e));
+		this.listen('mousedown', this.startDrag.bind(this));
+		this.listen('mousemove', this.continueDrag.bind(this));
+		this.listen('mouseout', this.endDrag.bind(this));
+		this.listen('mouseup', this.endDrag.bind(this));
 		setInterval(() => this.frameAdvance(),
 			1000 / Panel.framerate);
+	}
+
+	listen(event, cb) {
+		this.canvas.addEventListener(event, e => {
+			cb(e, this._mouseVector(e));
+			e.preventDefault();
+		});
 	}
 
 	createDragDomino(location, direction) {
@@ -46,11 +49,10 @@ class Panel {
 		return result;
 	}
 
-	startDrag(e) {
+	startDrag(e, mouse) {
 		if (this.playing)
 			this.stop();
 		else {
-			const mouse = this._mouseVector(e);
 			let clicked = null;
 			this.dominoes.forEach(domino => {
 				if (domino.location.minus(mouse).length <
@@ -68,17 +70,15 @@ class Panel {
 			if (!this.playing)
 				this.drawFrame(0);
 		}
-		e.preventDefault();
 	}
 
-	continueDrag(e) {
+	continueDrag(e, mouse) {
 		if (!this.dragging)
 			return;
-		const mouse = this._mouseVector(e),
-			motion = (this.currentDragDomino
+		const motion = (this.currentDragDomino
 				? this.currentDragDomino.location
 				: this.dragStart).minus(mouse),
-			direction = motion.direction.opposite();
+			direction = motion.direction;
 		if (this.currentDragDomino != null ||
 			this.createDragDomino(mouse, motion)) {
 			// Rotate the current domino if it won't hit anything:
@@ -92,19 +92,17 @@ class Panel {
 			if (motion.length >= Panel.dominoSpacing)
 				this.createDragDomino(mouse, direction);
 		}
-		e.preventDefault();
 		this.drawFrame(0);
 		this.chain.markDirty();
 	}
 
-	endDrag(e) {
+	endDrag() {
 		if (this.dragging) {
 			this.currentDragDomino = null;
 			this.dragging = false;
 			this.drawFrame(0);
 		}
-		if (e)
-			e.preventDefault();
+		this.rebuildChain();
 	}
 
 	_mouseVector(e) {
@@ -143,43 +141,25 @@ class Panel {
 
 	addDomino(domino) {
 		this.dominoes.add(domino);
+		this.rebuildChain();
 	}
 
 	removeDomino(domino) {
 		if (domino === this.trigger)
 			throw new Error('Cannot remove trigger');
 		this.dominoes.delete(domino);
+		this.rebuildChain();
 	}
 
 	drawUprightDomino(domino) {
-		this.ctx.save();
-		this.ctx.translate(
-			domino.location.x,
-			domino.location.y);
-		this.ctx.rotate(
-			domino.direction.theta);
 		this.ctx.strokeStyle = '1px solid black';
-		this.ctx.strokeRect(
-			-Domino.thickness / 2,
-			-Domino.width / 2,
-			Domino.thickness,
-			Domino.width);
-		this.ctx.restore();
+		domino.standingFootprint.draw(this.ctx);
 	}
 
 	drawFallenDomino(domino, direction) {
-		this.ctx.save();
-		this.ctx.translate(
-			domino.location.x,
-			domino.location.y);
-		this.ctx.rotate(direction.theta);
 		this.ctx.strokeStyle = '1px solid black';
-		this.ctx.strokeRect(
-			Domino.thickness / 2,
-			-Domino.width / 2,
-			Domino.height,
-			Domino.width);
-		this.ctx.restore();
+		domino.getFallenFootprint(direction)
+			.draw(this.ctx);
 	}
 
 	blank() {
@@ -218,4 +198,4 @@ class Panel {
 
 Panel.clickRadius = 10;
 Panel.dominoSpacing = Domino.height / 2;
-Panel.framerate = 1;
+Panel.framerate = 5;

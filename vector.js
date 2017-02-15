@@ -5,7 +5,7 @@ class Vector {
 	}
 
 	static fromAngle(theta) {
-		return new Vector(Math.sin(theta), Math.cos(theta));
+		return new Vector(Math.cos(theta), Math.sin(theta));
 	}
 
 	get angle() {

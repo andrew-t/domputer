@@ -1,9 +1,15 @@
 const TAU = Math.PI * 2;
 
+if (typeof require !== 'undefined') {
+	Vector = require('./vector');
+}
+
 class Direction {
 	constructor(theta) {
 		if (theta instanceof Direction)
 			this.theta = theta.theta;
+		else if (theta instanceof Vector)
+			this.theta = theta.direction;
 		else if (isNaN(theta))
 			throw new Error('Invalid theta');
 		else
