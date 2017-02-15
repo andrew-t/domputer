@@ -1,9 +1,14 @@
+if (typeof require !== 'undefined') {
+	Domino = require('./domino');
+	Polygon = require('./polygon');
+}
+
 class Panel {
 	constructor(canvas, trigger) {
 		this.canvas = canvas;
 		this.trigger = trigger;
 		this.ctx = canvas.getContext('2d');
-		this.dominoes = new Set([ trigger ]);
+		this.dominoes = new Set([]);
 
 		console.log(this.ctx);
 
@@ -29,7 +34,8 @@ class Panel {
 
 	createDragDomino(location, direction) {
 		const domino = new Domino(location, direction);
-		if (!this.wouldObstructAny(domino)) {
+		if (!this.wouldObstructAny(domino) &&
+			!this.trigger.polygon.contains(location)) {
 			this.currentDragDomino = domino;
 			this.addDomino(domino);
 			this.fallSequence = null;
@@ -52,6 +58,8 @@ class Panel {
 	startDrag(e, mouse) {
 		if (this.playing)
 			this.stop();
+		else if (this.trigger.polygon.contains(mouse))
+			this.play();
 		else {
 			let clicked = null;
 			this.dominoes.forEach(domino => {
@@ -63,9 +71,7 @@ class Panel {
 				this.dragging = true;
 				this.dragStart = mouse;
 				this.createDragDomino(mouse, Direction.zero);
-			} else if (clicked == this.trigger)
-				this.play();
-			else
+			} else
 				this.removeDomino(clicked);
 			if (!this.playing)
 				this.drawFrame(0);
@@ -110,13 +116,14 @@ class Panel {
 	}
 
 	rebuildChain() {
+		const triggerDominoes = this.trigger.dominoes;
 		this.chain = new Chain(
-			this.trigger,
+			triggerDominoes[0],
 			this.trigger.direction.theta);
-		this.dominoes.forEach(domino => {
-			if (domino != this.trigger)
-				this.chain.add(domino);
-		});
+		triggerDominoes.slice(1).forEach(domino =>
+			this.chain.add(domino));
+		this.dominoes.forEach(domino =>
+			this.chain.add(domino));
 		this.fallSequence = this.chain.recalculate();
 	}
 
@@ -131,6 +138,10 @@ class Panel {
 		back(frame => frame.forEach(domino =>
 			fallen.add(domino)));
 
+		this.ctx.strokeStyle = '1px solid #00f';
+		this.ctx.fillStyle = '#fdd';
+		this.trigger.polygon.draw(this.ctx);
+
 		this.ctx.strokeStyle = '1px solid black';
 		this.ctx.fillStyle = '#ddd';
 		back(frame => frame.forEach(
@@ -141,7 +152,7 @@ class Panel {
 
 		this.ctx.strokeStyle = '1px solid black';
 		this.ctx.fillStyle = '#fff';
-		this.dominoes.forEach(domino => {
+		this.chain.dominoes.forEach(domino => {
 			if (!fallen.has(domino))
 				this.drawUprightDomino(domino);
 		});
@@ -161,8 +172,6 @@ class Panel {
 	}
 
 	removeDomino(domino) {
-		if (domino === this.trigger)
-			throw new Error('Cannot remove trigger');
 		this.dominoes.delete(domino);
 		this.rebuildChain();
 	}
@@ -210,6 +219,39 @@ class Panel {
 	}
 }
 
+Panel.Region = class {
+	constructor(location, direction) {
+		this.location = location;
+		this.direction = direction;
+	}
+
+	get polygon() {
+		const hs = Panel.regionSize * Panel.dominoSpacing / 2,
+			v = this.direction.asVector().times(hs),
+			u = v.perpendicular();
+		return new Polygon([
+			this.location.minus(u).minus(v),
+			this.location.plus(u).minus(v),
+			this.location.plus(u).plus(v),
+			this.location.minus(u).plus(v)
+		]);
+	}
+	
+	get dominoes() {
+		const dominoes = [],
+			s = this.direction
+					.asVector()
+					.times(Panel.dominoSpacing);
+		for (let i = Panel.regionSize - 1; i >= 0; --i)
+			dominoes.push(new Domino(
+				this.location.minus(s.times(
+					i - (Panel.regionSize / 2) + 0.5)),
+				this.direction));
+		return dominoes;
+	}
+};
+
 Panel.clickRadius = 10;
 Panel.dominoSpacing = Domino.height / 2;
-Panel.framerate = 5;
+Panel.regionSize = 5;
+Panel.framerate = 8;
