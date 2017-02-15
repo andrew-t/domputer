@@ -125,18 +125,34 @@ class Panel {
 		this.blank();
 		if (!this.fallSequence)
 			this.rebuildChain();
+		const fs = this.fallSequence;
+
+		const fallen = new Set();
+		back(frame => frame.forEach(domino =>
+			fallen.add(domino)));
+
+		this.ctx.strokeStyle = '1px solid black';
+		this.ctx.fillStyle = '#ddd';
+		back(frame => frame.forEach(
+			(direction, domino) => {
+				this.drawFallenDomino(domino, direction);
+				fallen.add(domino);
+			}));
+
+		this.ctx.strokeStyle = '1px solid black';
+		this.ctx.fillStyle = '#fff';
 		this.dominoes.forEach(domino => {
-			let fallen = false;
-			this.fallSequence.slice(0, n)
-				.forEach(frame => {
-					if (frame.has(domino))
-						fallen = frame.get(domino);
-				});
-			if (fallen)
-				this.drawFallenDomino(domino, fallen);
-			else
+			if (!fallen.has(domino))
 				this.drawUprightDomino(domino);
 		});
+
+		function back(cb) {
+			for (let f = n; f >= 0; --f) {
+				const frame = fs[f - 1];
+				if (frame)
+					cb(frame);
+			}
+		}
 	}
 
 	addDomino(domino) {
@@ -152,12 +168,10 @@ class Panel {
 	}
 
 	drawUprightDomino(domino) {
-		this.ctx.strokeStyle = '1px solid black';
 		domino.standingFootprint.draw(this.ctx);
 	}
 
 	drawFallenDomino(domino, direction) {
-		this.ctx.strokeStyle = '1px solid black';
 		domino.getFallenFootprint(direction)
 			.draw(this.ctx);
 	}

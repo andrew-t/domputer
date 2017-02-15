@@ -57,6 +57,7 @@ class Polygon {
 		ctx.moveTo(p.x, p.y);
 		this.points.forEach(p => ctx.lineTo(p.x, p.y));
 		ctx.stroke();
+		ctx.fill();
 	}
 }
 
