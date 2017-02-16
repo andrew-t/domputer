@@ -1,0 +1,78 @@
+.domputer-player {
+	width: calc(100% - 2em);
+	height: 500px;
+	position: relative;
+	border: 1em solid #444;
+	padding: 0;
+	background: #444;
+
+	.canvas-scroller {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 100px;
+		overflow: auto;
+		padding: 0;
+		background: #444;
+		canvas {
+			position: absolute;
+			top: 0;
+			left: 0;
+		}
+	}
+
+	.controls {
+		position: absolute;
+		display: flex;
+		justify-content: space-between;
+		bottom: 0;
+		left: 0;
+		width: 100%;
+		height: 100px;
+		background: #000;
+		
+		button {
+			background: #444;
+			color: #fff;
+			border: none;
+			padding: 0 30px;
+			font-size: 20px;
+			cursor: pointer;
+			&:hover {
+				background: #fff;
+				color: #000;
+			}
+		}
+
+		.play { order: 1; }
+		.reset { order: 2; }
+		.reveal { order: 3; }
+		.test-results {
+			order: 4;
+			flex-grow: 1;
+			padding: 20px;
+		}
+		.expand { order: 5; }
+
+		.expand:before { content: 'Expand'; }
+		.reset:before { content: 'Clear'; }
+		.reveal:before { content: 'Reveal Answer'; }
+		.play:before { content: 'Play'; }
+
+		div {
+			color: white;
+		}
+	}
+
+	&.expanded {
+		position: fixed;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		width: 100vw;
+		height: 100vh;
+		border: none;
+	}
+}

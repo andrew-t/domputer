@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', e => {
 			elements[i].getAttribute('data-dominoes'));
 
 	function initDominoes(container, name) {
-		data = boards[name];
+		const data = boards[name];
 
 		const scroller = document.createElement('div'),
 			canvas = document.createElement('canvas');
