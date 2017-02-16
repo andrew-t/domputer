@@ -4,10 +4,12 @@ if (typeof require !== 'undefined') {
 }
 
 class Panel {
-	constructor(canvas, trigger, inputs) {
+	constructor(canvas, trigger, inputs, outputs, tests) {
 		this.canvas = canvas;
 		this.trigger = trigger;
 		this.inputs = inputs;
+		this.outputs = outputs;
+		this.tests = tests;
 		this.inputStates = inputs.map(i => true);
 		this.ctx = canvas.getContext('2d');
 		this.dominoes = new Set([]);
@@ -42,6 +44,9 @@ class Panel {
 			return null;
 		for (let i = 0; i < this.inputs.length; ++i)
 			if (this.inputs[i].polygon.contains(location))
+				return null;
+		for (let i = 0; i < this.outputs.length; ++i)
+			if (this.outputs[i].polygon.contains(location))
 				return null;
 
 		this.currentDragDomino = domino;
@@ -133,30 +138,39 @@ class Panel {
 		return new Vector(e.offsetX, e.offsetY);
 	}
 
-	rebuildChain() {
+	getResultForInputs(inputStates) {
 		const triggerDominoes = this.trigger.dominoes,
-			chain = this.chain = new Chain(
+			chain = new Chain(
 				triggerDominoes[0],
-				this.trigger.direction.theta);
+				this.trigger.direction.theta),
+			outputStates = this.outputs.map(o => false);
 		triggerDominoes.slice(1).forEach(domino =>
-			this.chain.add(domino));
+			chain.add(domino));
 
 		for (let i = 0; i < this.inputs.length; ++i)
-			if (this.inputStates[i])
+			if (inputStates[i])
 				include(this.inputs[i]);
 
 		this.dominoes.forEach(domino =>
-			this.chain.add(domino));
+			chain.add(domino));
 
 		this.canvas.setAttribute('data-chain-dominoes',
-			JSON.stringify(this.chain.dominoes));
+			JSON.stringify(chain.dominoes));
 
-		this.fallSequence = this.chain.recalculate();
+		this.fallSequence = chain.recalculate();
+
+		return { chain, outputStates };
 
 		function include(region) {
 			region.dominoes.forEach(
 				domino => chain.add(domino));
 		}
+	}
+
+	rebuildChain() {
+		this.chain = this
+			.getResultForInputs(this.inputStates)
+			.chain;
 	}
 
 	drawFrame(n) {
@@ -174,12 +188,28 @@ class Panel {
 		this.ctx.fillStyle = '#fdd';
 		this.trigger.polygon.draw(this.ctx);
 
+		this.ctx.strokeStyle = '1px solid #00f';
 		for (let i = 0; i < this.inputs.length; ++i) {
-			this.ctx.strokeStyle = '1px solid #00f';
 			this.ctx.fillStyle = this.inputStates[i]
 				? '#ffe'
 				: '#880';
 			this.inputs[i].polygon.draw(this.ctx);
+		}
+
+		let test = null;
+		this.tests.forEach(t => {
+			if (t.inputs.join(',') ==
+					this.inputStates.join(','))
+				test = t;
+		});
+		for (let i = 0; i < this.outputs.length; ++i) {
+			this.ctx.strokeStyle = '1px solid #00f';
+			this.ctx.fillStyle = test
+				? test.outputs[i]
+					? '#dfd'
+					: '#fdd'
+				: '#888';
+			this.outputs[i].polygon.draw(this.ctx);
 		}
 
 		this.ctx.strokeStyle = '1px solid black';

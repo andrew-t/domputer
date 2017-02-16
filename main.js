@@ -13,7 +13,12 @@ document.addEventListener('DOMContentLoaded', e => {
 		const panel = new Panel(
 			canvas,
 			region(data.trigger),
-			data.inputs.map(region));
+			data.inputs.map(region),
+			data.outputs.map(region),
+			data.tests.map(t => ({
+				inputs: text2bools(t.in),
+				outputs: text2bools(t.out)
+			})));
 		panel.drawFrame(0);
 	}
 
@@ -21,5 +26,10 @@ document.addEventListener('DOMContentLoaded', e => {
 		return new Panel.Region(
 			new Vector(data.x, data.y),
 			new Direction(data.theta / 180 * Math.PI));
+	}
+
+	function text2bools(text) {
+		const key = { '0': false, '1': true, '?': null }
+		return text.split('').map(t => key[t]);
 	}
 });
