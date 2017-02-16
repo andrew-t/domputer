@@ -26,7 +26,11 @@ document.addEventListener('DOMContentLoaded', e => {
 			data.tests.map(t => ({
 				inputs: text2bools(t.in),
 				outputs: text2bools(t.out)
-			})));
+			})),
+			data.ob
+				? data.ob.map(ob => new Polygon(
+					ob.map(v => new Vector(v.x, v.y))))
+				: []);
 		panel.drawFrame(0);
 
 		const controls = document.createElement('div');

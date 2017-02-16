@@ -5,12 +5,13 @@ if (typeof require !== 'undefined') {
 }
 
 class Panel {
-	constructor(canvas, trigger, inputs, outputs, tests) {
+	constructor(canvas, trigger, inputs, outputs, tests, ob) {
 		this.canvas = canvas;
 		this.trigger = trigger;
 		this.inputs = inputs;
 		this.outputs = outputs;
 		this.tests = tests;
+		this.ob = ob || [];
 		this.inputStates = inputs.map(i => true);
 		this.ctx = canvas.getContext('2d');
 		this.dominoes = new Set([]);
@@ -43,6 +44,9 @@ class Panel {
 		if (this.wouldObstructAny(domino) ||
 			this.trigger.polygon.contains(location))
 			return null;
+		for (let i = 0; i < this.ob.length; ++i)
+			if (this.ob[i].contains(location))
+				return null;
 		for (let i = 0; i < this.inputs.length; ++i)
 			if (this.inputs[i].polygon.contains(location))
 				return null;
@@ -225,8 +229,12 @@ class Panel {
 		back(frame => frame.forEach(domino =>
 			fallen.add(domino)));
 
+		this.ctx.strokeStyle = 'none';
+		this.ctx.fillStyle = '#888';
+		this.ob.forEach(ob => ob.draw(this.ctx));
+
 		this.ctx.strokeStyle = '1px solid #00f';
-		this.ctx.fillStyle = '#fdd';
+		this.ctx.fillStyle = '#ddf';
 		this.trigger.polygon.draw(this.ctx);
 
 		this.ctx.strokeStyle = '1px solid #00f';
