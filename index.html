@@ -11,10 +11,27 @@
 	<script type="text/javascript" src="panel.js"></script>
 </head>
 <body>
+
+	<h1>Half Adder</h1>
 	<canvas width="600" height="400"
 		data-dominoes="{
-			trigger: { x: 50, y: 200, theta: 30 }
+			trigger: { x: 55, y: 200, theta: 0 },
+			inputs: [
+				{ x: 200, y: 55, theta: 0 },
+				{ x: 200, y: 345, theta: 0 }
+			],
+			outputs: [
+				{ x: 545, y: 55, theta: 0 },
+				{ x: 545, y: 345, theta: 0 }
+			],
+			tests: [
+				{ in: '00', out: '00' },
+				{ in: '01', out: '01' },
+				{ in: '10', out: '01' },
+				{ in: '11', out: '10' }
+			]
 		}"></canvas>
+
 	<script type="text/javascript" src="main.js"></script>
 </body>
 </html>

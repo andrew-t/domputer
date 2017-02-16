@@ -31,4 +31,16 @@ describe('domino', () => {
 			trigger.direction);
 		expect(topple).not.to.be.ok;
 	});
+
+	it('should not topple a distant domino II', () => {
+		const topple = new Domino(
+				new Vector(0, 0),
+				new Direction(0))
+			.wouldHit(new Domino(
+					new Vector(Domino.height * 10,
+						(Domino.width) * -0.5),
+					new Direction(0)),
+				new Direction(0));
+		expect(topple).not.to.be.ok;
+	});
 });

@@ -10,10 +10,16 @@ document.addEventListener('DOMContentLoaded', e => {
 	function initDominoes(canvas, data) {
 		// I know, I know, but I'm writing the HTML:
 		data = eval('(' + data + ')');
-		const trigger = new Panel.Region(
-				new Vector(data.trigger.x, data.trigger.y),
-				new Direction(data.trigger.theta / 180 * Math.PI)),
-			panel = new Panel(canvas, trigger);
+		const panel = new Panel(
+			canvas,
+			region(data.trigger),
+			data.inputs.map(region));
 		panel.drawFrame(0);
+	}
+
+	function region(data) {
+		return new Panel.Region(
+			new Vector(data.x, data.y),
+			new Direction(data.theta / 180 * Math.PI));
 	}
 });

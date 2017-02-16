@@ -38,6 +38,48 @@ describe('chain', () => {
 		const fall = chain.recalculate();
 		expect(fall.length).to.be.equal(1);
 	});
+
+	const example = [
+		{ x: 15, y: 200, theta: 0 },
+		{ x: 35, y: 200, theta: 0 },
+		{ x: 55, y: 200, theta: 0 },
+		{ x: 75, y: 200, theta: 0 },
+		{ x: 95, y: 200, theta: 0 },
+		{ x: 540, y: 212, theta: -1.5707963267948966 }
+	].map(d =>
+			new Domino(new Vector(d.x, d.y), d.theta));
+
+	it('should not break the example', () => {
+		const chain = new Chain(
+			example[0], example[0].direction);
+		example.slice(1).forEach(d => chain.add(d));
+		const fall = chain.recalculate();
+		// console.log(fall);
+		fall.forEach(frame =>
+			expect(frame.has(example[5])).not.to.be.ok);
+	});
+
+	it('should not topple 5 from 0', () =>
+		expect(example[0].wouldHit(
+			example[5], example[0].direction))
+			.not.to.be.ok);
+
+	const fall = example[0]
+			.getFallenFootprint(example[0].direction),
+		stand = example[5].standingFootprint;
+	// console.log(stand.toString(), fall.points[0].toString())
+
+	it('should not intersect 5 with 0', () =>
+		expect(fall.intersects(stand)).not.to.be.ok);
+
+	it('should not contain 5 in 0', () =>
+		expect(fall.contains(stand.points[0])).not.to.be.ok);
+	it('should not contain 0 in 5', () =>
+		expect(stand.contains(fall.points[0])).not.to.be.ok);
+	it('should not intersect edges of 0 and 5', () =>
+		stand.edges.forEach(s =>
+			fall.edges.forEach(f =>
+				expect(s.crosses(f)).not.to.be.ok)));
 });
 
 function printFall(fall) {

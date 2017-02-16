@@ -4,9 +4,11 @@ if (typeof require !== 'undefined') {
 }
 
 class Panel {
-	constructor(canvas, trigger) {
+	constructor(canvas, trigger, inputs) {
 		this.canvas = canvas;
 		this.trigger = trigger;
+		this.inputs = inputs;
+		this.inputStates = inputs.map(i => true);
 		this.ctx = canvas.getContext('2d');
 		this.dominoes = new Set([]);
 
@@ -34,15 +36,19 @@ class Panel {
 
 	createDragDomino(location, direction) {
 		const domino = new Domino(location, direction);
-		if (!this.wouldObstructAny(domino) &&
-			!this.trigger.polygon.contains(location)) {
-			this.currentDragDomino = domino;
-			this.addDomino(domino);
-			this.fallSequence = null;
-			this.chain = null;
-			return domino;
-		}
-		else return null;
+
+		if (this.wouldObstructAny(domino) ||
+			this.trigger.polygon.contains(location))
+			return null;
+		for (let i = 0; i < this.inputs.length; ++i)
+			if (this.inputs[i].polygon.contains(location))
+				return null;
+
+		this.currentDragDomino = domino;
+		this.addDomino(domino);
+		this.fallSequence = null;
+		this.chain = null;
+		return domino;
 	}
 
 	wouldObstructAny(domino) {
@@ -56,26 +62,38 @@ class Panel {
 	}
 
 	startDrag(e, mouse) {
-		if (this.playing)
+		if (this.playing) {
 			this.stop();
-		else if (this.trigger.polygon.contains(mouse))
-			this.play();
-		else {
-			let clicked = null;
-			this.dominoes.forEach(domino => {
-				if (domino.location.minus(mouse).length <
-						Panel.clickRadius)
-					clicked = domino;
-			});
-			if (!clicked) {
-				this.dragging = true;
-				this.dragStart = mouse;
-				this.createDragDomino(mouse, Direction.zero);
-			} else
-				this.removeDomino(clicked);
-			if (!this.playing)
-				this.drawFrame(0);
+			return;
 		}
+		if (this.trigger.polygon.contains(mouse)) {
+			this.play();
+			return;
+		}
+		for (let i = 0; i < this.inputs.length; ++i) {
+			const input = this.inputs[i];
+			if (input.polygon.contains(mouse)) {
+				this.inputStates[i] =! this.inputStates[i];
+				this.rebuildChain();
+				this.drawFrame(0);
+				return;
+			}
+		}
+
+		let clicked = null;
+		this.dominoes.forEach(domino => {
+			if (domino.location.minus(mouse).length <
+					Panel.clickRadius)
+				clicked = domino;
+		});
+		if (!clicked) {
+			this.dragging = true;
+			this.dragStart = mouse;
+			this.createDragDomino(mouse, Direction.zero);
+		} else
+			this.removeDomino(clicked);
+		if (!this.playing)
+			this.drawFrame(0);
 	}
 
 	continueDrag(e, mouse) {
@@ -116,15 +134,29 @@ class Panel {
 	}
 
 	rebuildChain() {
-		const triggerDominoes = this.trigger.dominoes;
-		this.chain = new Chain(
-			triggerDominoes[0],
-			this.trigger.direction.theta);
+		const triggerDominoes = this.trigger.dominoes,
+			chain = this.chain = new Chain(
+				triggerDominoes[0],
+				this.trigger.direction.theta);
 		triggerDominoes.slice(1).forEach(domino =>
 			this.chain.add(domino));
+
+		for (let i = 0; i < this.inputs.length; ++i)
+			if (this.inputStates[i])
+				include(this.inputs[i]);
+
 		this.dominoes.forEach(domino =>
 			this.chain.add(domino));
+
+		this.canvas.setAttribute('data-chain-dominoes',
+			JSON.stringify(this.chain.dominoes));
+
 		this.fallSequence = this.chain.recalculate();
+
+		function include(region) {
+			region.dominoes.forEach(
+				domino => chain.add(domino));
+		}
 	}
 
 	drawFrame(n) {
@@ -141,6 +173,14 @@ class Panel {
 		this.ctx.strokeStyle = '1px solid #00f';
 		this.ctx.fillStyle = '#fdd';
 		this.trigger.polygon.draw(this.ctx);
+
+		for (let i = 0; i < this.inputs.length; ++i) {
+			this.ctx.strokeStyle = '1px solid #00f';
+			this.ctx.fillStyle = this.inputStates[i]
+				? '#ffe'
+				: '#880';
+			this.inputs[i].polygon.draw(this.ctx);
+		}
 
 		this.ctx.strokeStyle = '1px solid black';
 		this.ctx.fillStyle = '#ddd';
