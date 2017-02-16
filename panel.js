@@ -188,6 +188,8 @@ class Panel {
 						return false;
 			return true;
 		});
+		this._triggerEvent('update-test-results',
+			this.testResults);
 
 		const result = this
 			.getResultForInputs(this.inputStates);
@@ -283,6 +285,12 @@ class Panel {
 	removeDomino(domino) {
 		this.dominoes.delete(domino);
 		this.rebuildChain();
+	}
+
+	reset() {
+		this.dominoes = new Set();
+		this.rebuildChain();
+		this.drawFrame(0);
 	}
 
 	drawUprightDomino(domino) {
