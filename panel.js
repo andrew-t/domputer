@@ -136,41 +136,52 @@ class Panel {
 	}
 
 	_mouseVector(e) {
-		return new Vector(e.offsetX, e.offsetY);
+		const rect = this.canvas.getBoundingClientRect();
+		return new Vector(
+			(e.clientX - rect.left) / (rect.right - rect.left) * this.canvas.width,
+			(e.clientY - rect.top) / (rect.bottom - rect.top) * this.canvas.height);
 	}
 
 	getResultForInputs(inputStates) {
 		const triggerDominoes = this.trigger.dominoes,
 			chain = new Chain(
 				triggerDominoes[0],
-				this.trigger.direction.theta),
-			outputStates = this.outputs.map(o => false);
+				this.trigger.direction.theta);
 		triggerDominoes.slice(1).forEach(domino =>
 			chain.add(domino));
 
 		for (let i = 0; i < this.inputs.length; ++i)
 			if (inputStates[i])
 				include(this.inputs[i]);
-		this.outputs.forEach(include);2
+
+		const outputDominoes =
+			this.outputs.map(include);
 
 		this.dominoes.forEach(domino =>
 			chain.add(domino));
 
-		this.fallSequence = chain.recalculate();
-
-		return { chain, outputStates };
+		const fallSequence = chain.recalculate(),
+			fallen = new Set();
+		fallSequence.forEach(frame => frame.forEach(
+			(direction, domino) => fallen.add(domino)));
+		return {
+			chain,
+			fallSequence,
+			outputStates: outputDominoes.map(
+				ds => fallen.has(ds[2]))
+		};
 
 		function include(region) {
-			region.dominoes.forEach(
-				domino => chain.add(domino));
+			const dominoes = region.dominoes;
+			dominoes.forEach(domino => chain.add(domino));
+			return dominoes;
 		}
 	}
 
 	rebuildChain() {
 		this.testResults = this.tests.map(test => {
-			const actual = this.getResultForInputs(
-					test.inputStates),
-				expected = test.outputStates;
+			const actual = this.getResultForInputs(test.inputs).outputStates,
+				expected = test.outputs;
 			for (let i = 0; i < actual.length; ++i)
 				if (expected[i] != '?' &&
 					expected[i] != actual[i])
@@ -178,23 +189,26 @@ class Panel {
 			return true;
 		});
 
-		this.chain = this
-			.getResultForInputs(this.inputStates)
-			.chain;
+		const result = this
+			.getResultForInputs(this.inputStates);
+		this.chain = result.chain;
+		this.fallSequence = result.fallSequence;
 
 		this.canvas.setAttribute('data-test-results',
-			stringifyDominoes(this.testResults.join(', ')));
+			this.testResults.join(', '));
 		this.canvas.setAttribute('data-chain-dominoes',
 			stringifyDominoes(this.chain.dominoes));
 		this.canvas.setAttribute('data-user-dominoes',
 			stringifyDominoes(this.dominoes));
 
 		function stringifyDominoes(dominoes) {
-			return JSON.stringify(dominoes.map(d => ({
+			const output = [];
+			dominoes.forEach(d => output.push({
 				x: d.location.x,
 				y: d.location.y,
 				theta: d.direction.theta
-			})));
+			}));
+			return JSON.stringify(output);
 		}
 	}
 

@@ -47,7 +47,8 @@ class Domino {
 	// Return a Direction if it will fall,
 	// otherwise something falsey
 	wouldHit(target, direction) {
-		if (!this.getFallenFootprint(direction)
+		if (!this.isAnywhereNear(target) ||
+			!this.getFallenFootprint(direction)
 				.intersects(target.standingFootprint))
 			return false;
 		const behind = this.location
@@ -61,8 +62,16 @@ class Domino {
 	}
 
 	wouldObstruct(target) {
-		return this.standingFootprint
-			.intersects(target.standingFootprint);
+		return this.isAnywhereNear(target) &&
+			this.standingFootprint
+				.intersects(target.standingFootprint);
+	}
+
+	isAnywhereNear(target) {
+		const dx = this.location.x - target.location.x,
+			dy = this.location.y - target.location.y;
+		return (Math.abs(dx) < Domino.safetyMargin &&
+			Math.abs(dy) < Domino.safetyMargin)
 	}
 
 	toString() {
@@ -78,7 +87,7 @@ Domino.width = 20;
 Domino.thickness = 4;
 Domino.height = 2 * Domino.width;
 
-Domino.collisionResolution = 0.2;
+Domino.safetyMargin = Domino.height + Domino.width + Domino.thickness;
 
 Domino._nextId = 1;
 

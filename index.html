@@ -2,6 +2,9 @@
 <html>
 <head>
 	<title>Domputer</title>
+	<script type="text/javascript">var boards = {};</script>
+	<script type="text/javascript" src="boards/half-adder.js"></script>
+
 	<script type="text/javascript" src="vector.js"></script>
 	<script type="text/javascript" src="line-segment.js"></script>
 	<script type="text/javascript" src="polygon.js"></script>
@@ -10,28 +13,13 @@
 	<script type="text/javascript" src="chain.js"></script>
 	<script type="text/javascript" src="events.js"></script>
 	<script type="text/javascript" src="panel.js"></script>
+	<link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
 
 	<h1>Half Adder</h1>
-	<canvas width="600" height="400"
-		data-dominoes="{
-			trigger: { x: 55, y: 200, theta: 0 },
-			inputs: [
-				{ x: 250, y: 55, theta: 0 },
-				{ x: 250, y: 345, theta: 0 }
-			],
-			outputs: [
-				{ x: 545, y: 55, theta: 0 },
-				{ x: 545, y: 345, theta: 0 }
-			],
-			tests: [
-				{ in: '00', out: '00' },
-				{ in: '01', out: '01' },
-				{ in: '10', out: '01' },
-				{ in: '11', out: '10' }
-			]
-		}"></canvas>
+	<div class="domputer-player"
+		data-dominoes="half-adder"></div>
 
 	<script type="text/javascript" src="main.js"></script>
 </body>

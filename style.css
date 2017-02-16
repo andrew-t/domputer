@@ -1,0 +1,7 @@
+.domputer-player {
+	width: 800px;
+	height: 400px;
+	overflow: auto;
+	position: relative;
+	display: block;
+}

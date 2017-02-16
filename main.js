@@ -1,15 +1,18 @@
 document.addEventListener('DOMContentLoaded', e => {
-	const canvases = document.getElementsByTagName('canvas');
-	for (let i = 0; i < canvases.length; ++i) {
-		const canvas = canvases[i],
-			data = canvas.getAttribute('data-dominoes');
-		if (data)
-			initDominoes(canvas, data);
-	}
+	const elements = document
+			.querySelectorAll('.domputer-player');
+	for (let i = 0; i < elements.length; ++i)
+		initDominoes(elements[i],
+			elements[i].getAttribute('data-dominoes'));
 
-	function initDominoes(canvas, data) {
-		// I know, I know, but I'm writing the HTML:
-		data = eval('(' + data + ')');
+	function initDominoes(container, name) {
+		data = boards[name];
+		const canvas = document.createElement('canvas');
+		canvas.setAttribute('width', data.width);
+		canvas.setAttribute('height', data.height);
+		canvas.style.width = data.width + 'px';
+		canvas.style.height = data.height + 'px';
+		container.appendChild(canvas);
 		const panel = new Panel(
 			canvas,
 			region(data.trigger),
