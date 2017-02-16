@@ -23,22 +23,32 @@ class Polygon {
 	}
 
 	contains(point) {
-		// Create a line that definitely ends outside the polygon:
-		const maxX = Math.max(...this.points.map(p => p.x));
-		if (maxX < point.x)
+		const maxX = Math.max(...this.points.map(p => p.x)),
+			maxY = Math.max(...this.points.map(p => p.y));
+		if (maxX < point.x || maxY < point.y)
 			return false;
-		const testLine = new LineSegment(point,
-			new Vector(maxX * 2, point.y));
-		// console.log(testLine.toString())
-		// If it crosses an odd number of edges, it starts inside:
-		let intersections = 0;
-		this.edges.forEach(edge => {
-			const result = edge.crosses(testLine);
-			// console.log(edge.toString(), result.toString())
-			if (result == LineSegment.Proper)
-				++intersections;
-		});
-		return !!(intersections & 1);
+
+		for (let tries = 0; tries < 100; ++tries) {
+			const testLine = new LineSegment(point,
+				new Vector(
+					maxX * (Math.random() + 2) + 100,
+					maxY * (Math.random() + 2) + 100));
+			// console.log(testLine.toString())
+
+			let intersections = 0,
+				onEdge = false;
+			this.edges.forEach(edge => {
+				const result = edge.crosses(testLine);
+				// console.log(edge.toString(), result.toString())
+				if (result == LineSegment.Proper)
+					++intersections;
+				else if (result == LineSegment.Improper)
+					onEdge = true;
+			});
+			if (!onEdge)
+				return !!(intersections & 1);
+		}
+		return true;
 	}
 
 	intersects(that) {
@@ -46,6 +56,12 @@ class Polygon {
 		if (this.contains(that.points[0]) ||
 			that.contains(this.points[0]))
 			return true;
+		// Check if any points are on edges:
+		for (let i = 0; i < this.n; ++i)
+			for (let j = 0; j < that.n; ++j)
+				if (this.edges[i].contains(that.points[j]) ||
+					that.edges[j].contains(this.points[i]))
+					return true;
 		// Check if any edges cross:
 		for (let i = 0; i < this.n; ++i)
 			for (let j = 0; j < that.n; ++j)

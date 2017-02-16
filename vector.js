@@ -69,7 +69,10 @@ class Vector {
 	}
 
 	toString() {
-		return `(${this.x}, ${this.y})`;
+		return `(${round(this.x)}, ${round(this.y)})`;
+		function round(n) {
+			return Math.round(n * 100) / 100;
+		}
 	}
 }
 

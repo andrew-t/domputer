@@ -39,47 +39,74 @@ describe('chain', () => {
 		expect(fall.length).to.be.equal(1);
 	});
 
-	const example = [
+	let nextId = 1;
+
+	dontHit([
+		{ x: 15, y: 200, theta: 0 }, // *
+		{ x: 35, y: 200, theta: 0 },
+		{ x: 55, y: 200, theta: 0 },
+		{ x: 75, y: 200, theta: 0 },
+		{ x: 95, y: 200, theta: 0 },
+		{ x: 540, y: 212, theta: -1.5707963267948966 } // *
+	], 0, 5);
+
+	dontHit([
 		{ x: 15, y: 200, theta: 0 },
 		{ x: 35, y: 200, theta: 0 },
 		{ x: 55, y: 200, theta: 0 },
 		{ x: 75, y: 200, theta: 0 },
 		{ x: 95, y: 200, theta: 0 },
-		{ x: 540, y: 212, theta: -1.5707963267948966 }
-	].map(d =>
-			new Domino(new Vector(d.x, d.y), d.theta));
+		{ x: 112, y: 198, theta: 2.6779450445889 },
+		{ x: 130, y: 189, theta: 2.4592760987150 },
+		{ x: 146, y: 176, theta: 2.29377568019638 },
+		{ x: 161, y: 159, theta: 2.073639537722757 },
+		{ x: 172, y: 139, theta: 1.89254688119153 },
+		{ x: 179, y: 118, theta: 1.862253121272763 }, // *
+		{ x: 185, y: 98, theta: 1.794272927935529 },
+		{ x: 190, y: 76, theta: 2.034443935795702 },
+		{ x: 481, y: 118, theta: 1.2793395323170296 } // *
+	], 10, 13);
 
-	it('should not break the example', () => {
-		const chain = new Chain(
-			example[0], example[0].direction);
-		example.slice(1).forEach(d => chain.add(d));
-		const fall = chain.recalculate();
-		// console.log(fall);
-		fall.forEach(frame =>
-			expect(frame.has(example[5])).not.to.be.ok);
-	});
+	function dontHit(dominoes, trigger, target) {
+		describe('should work with example ' + nextId++,
+			() => {
+				const example = dominoes.map(d =>
+					new Domino(new Vector(d.x, d.y), d.theta));
 
-	it('should not topple 5 from 0', () =>
-		expect(example[0].wouldHit(
-			example[5], example[0].direction))
-			.not.to.be.ok);
+				it('should not break the example', () => {
+					const chain = new Chain(
+						example[trigger], example[trigger].direction);
+					example.slice(1)
+						.forEach(d => chain.add(d));
+					const fall = chain.recalculate();
+					// console.log(fall);
+					fall.forEach(frame =>
+						expect(frame.has(example[target])).not.to.be.ok);
+				});
 
-	const fall = example[0]
-			.getFallenFootprint(example[0].direction),
-		stand = example[5].standingFootprint;
-	// console.log(stand.toString(), fall.points[0].toString())
+				it('should not topple it from 0', () =>
+					expect(example[trigger].wouldHit(
+						example[target], example[trigger].direction))
+						.not.to.be.ok);
 
-	it('should not intersect 5 with 0', () =>
-		expect(fall.intersects(stand)).not.to.be.ok);
+				const fall = example[trigger]
+						.getFallenFootprint(example[trigger].direction),
+					stand = example[target].standingFootprint;
+				// console.log(stand.toString(), fall.points[0].toString())
 
-	it('should not contain 5 in 0', () =>
-		expect(fall.contains(stand.points[0])).not.to.be.ok);
-	it('should not contain 0 in 5', () =>
-		expect(stand.contains(fall.points[0])).not.to.be.ok);
-	it('should not intersect edges of 0 and 5', () =>
-		stand.edges.forEach(s =>
-			fall.edges.forEach(f =>
-				expect(s.crosses(f)).not.to.be.ok)));
+				it('should not intersect it with 0', () =>
+					expect(fall.intersects(stand)).not.to.be.ok);
+
+				it('should not contain it in 0', () =>
+					expect(fall.contains(stand.points[0])).not.to.be.ok);
+				it('should not contain 0 in it', () =>
+					expect(stand.contains(fall.points[0])).not.to.be.ok);
+				it('should not intersect edges of 0 and it', () =>
+					stand.edges.forEach(s =>
+						fall.edges.forEach(f =>
+							expect(s.crosses(f)).not.to.be.ok)));
+			});
+	}
 });
 
 function printFall(fall) {

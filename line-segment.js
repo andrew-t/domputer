@@ -40,6 +40,18 @@ class LineSegment {
 		return LineSegment.Proper;
 	}
 
+	contains(point) {
+		const v = this.asVector(),
+			p = point.minus(this.p1);
+		if (p.cross(v) != 0)
+			return false;
+		const d = p.dot(v),
+			l2 = v.dot(v);
+		if (d < 0 || d > l2)
+			return false;
+		return true;
+	}
+
 	_crossesFullLine(line) {
 		const l1 = line.p1.minus(this.p1),
 			l2 = line.p2.minus(this.p1),

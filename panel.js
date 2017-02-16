@@ -150,6 +150,7 @@ class Panel {
 		for (let i = 0; i < this.inputs.length; ++i)
 			if (inputStates[i])
 				include(this.inputs[i]);
+		this.outputs.forEach(include);
 
 		this.dominoes.forEach(domino =>
 			chain.add(domino));
