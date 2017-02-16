@@ -1,6 +1,7 @@
 if (typeof require !== 'undefined') {
 	Domino = require('./domino');
 	Polygon = require('./polygon');
+	eventise = require('./events');
 }
 
 class Panel {
@@ -150,13 +151,10 @@ class Panel {
 		for (let i = 0; i < this.inputs.length; ++i)
 			if (inputStates[i])
 				include(this.inputs[i]);
-		this.outputs.forEach(include);
+		this.outputs.forEach(include);2
 
 		this.dominoes.forEach(domino =>
 			chain.add(domino));
-
-		this.canvas.setAttribute('data-chain-dominoes',
-			JSON.stringify(chain.dominoes));
 
 		this.fallSequence = chain.recalculate();
 
@@ -169,9 +167,35 @@ class Panel {
 	}
 
 	rebuildChain() {
+		this.testResults = this.tests.map(test => {
+			const actual = this.getResultForInputs(
+					test.inputStates),
+				expected = test.outputStates;
+			for (let i = 0; i < actual.length; ++i)
+				if (expected[i] != '?' &&
+					expected[i] != actual[i])
+						return false;
+			return true;
+		});
+
 		this.chain = this
 			.getResultForInputs(this.inputStates)
 			.chain;
+
+		this.canvas.setAttribute('data-test-results',
+			stringifyDominoes(this.testResults.join(', ')));
+		this.canvas.setAttribute('data-chain-dominoes',
+			stringifyDominoes(this.chain.dominoes));
+		this.canvas.setAttribute('data-user-dominoes',
+			stringifyDominoes(this.dominoes));
+
+		function stringifyDominoes(dominoes) {
+			return JSON.stringify(dominoes.map(d => ({
+				x: d.location.x,
+				y: d.location.y,
+				theta: d.direction.theta
+			})));
+		}
 	}
 
 	drawFrame(n) {
@@ -321,6 +345,8 @@ Panel.Region = class {
 		return dominoes;
 	}
 };
+
+eventise(Panel);
 
 Panel.clickRadius = 10;
 Panel.dominoSpacing = Domino.height / 2;
