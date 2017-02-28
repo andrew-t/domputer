@@ -1,6 +1,6 @@
 const Domino = require('../domino'),
 	Chain = require('../chain'),
-	Vector = require('../vector');
+	Vector = require('../xy/vector');
 
 const expect = require('chai').expect;
 

@@ -1,7 +1,7 @@
 if (typeof require !== 'undefined') {
-	Vector = require('./vector');
-	Direction = require('./direction');
-	Polygon = require('./polygon');
+	Vector = require('./xy/vector');
+	Direction = require('./xy/direction');
+	Polygon = require('./xy/polygon');
 }
 
 class Domino {

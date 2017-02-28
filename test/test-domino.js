@@ -1,6 +1,6 @@
 const Domino = require('../domino'),
-	Vector = require('../vector'),
-	Direction = require('../direction');
+	Vector = require('../xy/vector'),
+	Direction = require('../xy/direction');
 
 const expect = require('chai').expect;
 

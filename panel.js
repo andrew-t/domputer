@@ -1,6 +1,6 @@
 if (typeof require !== 'undefined') {
 	Domino = require('./domino');
-	Polygon = require('./polygon');
+	Polygon = require('./xy/polygon');
 	eventise = require('./events');
 }
 
@@ -33,7 +33,7 @@ class Panel {
 
 	listen(event, cb) {
 		this.canvas.addEventListener(event, e => {
-			cb(e, this._mouseVector(e));
+			cb(e, Vector.canvasMouseVector(this.canvas, e));
 			e.preventDefault();
 		});
 	}
@@ -137,13 +137,6 @@ class Panel {
 			this.drawFrame(0);
 		}
 		this.rebuildChain();
-	}
-
-	_mouseVector(e) {
-		const rect = this.canvas.getBoundingClientRect();
-		return new Vector(
-			(e.clientX - rect.left) / (rect.right - rect.left) * this.canvas.width,
-			(e.clientY - rect.top) / (rect.bottom - rect.top) * this.canvas.height);
 	}
 
 	getResultForInputs(inputStates) {

@@ -34,13 +34,15 @@
 		button {
 			background: #444;
 			color: #fff;
-			border: none;
-			padding: 0 30px;
-			font-size: 20px;
+			border: 0.15em solid white;
+			padding: 0 1.5em;
+			font-size: 1em;
+			margin: 0.15em;
 			cursor: pointer;
 			&:hover {
 				background: #fff;
 				color: #000;
+				border: 0.15em solid black;
 			}
 		}
 
@@ -51,6 +53,7 @@
 			order: 4;
 			flex-grow: 1;
 			padding: 20px;
+			font-size: 0.8em;
 		}
 		.expand { order: 5; }
 
